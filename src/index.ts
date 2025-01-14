@@ -2,15 +2,46 @@ import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import { Command } from './discord/Command';
 import { logger } from './utils/Logger';
+import * as fs from 'fs';
+import * as path from 'path';
 
-config(); // Load environment variables
+config();
+
+interface CommandConfig {
+    name: string;
+    description: string;
+    source: string;
+}
+
+interface CommandsConfig {
+    commands: CommandConfig[];
+}
 
 async function loadCommands(): Promise<Map<string, Command>> {
-    const commands = await import('./commands');
     const commandMap = new Map<string, Command>();
-    for (const command of Object.values(commands)) {
-        commandMap.set('!' + command.name, command);
+    
+    try {
+        const configPath = path.join(process.cwd(), 'commands.json');
+        const configContent = fs.readFileSync(configPath, 'utf-8');
+        const config: CommandsConfig = JSON.parse(configContent);
+        
+        for (const cmdConfig of config.commands) {
+            try {
+                const commandModule = await import(cmdConfig.source);
+                const command = commandModule[cmdConfig.name];
+                if (command) {
+                    command.description = cmdConfig.description; // Add description to command object
+                    commandMap.set('!' + cmdConfig.name, command);
+                    logger.debug(`Loaded command: !${cmdConfig.name}`, 'Commands');
+                }
+            } catch (error) {
+                logger.error(`Failed to load command ${cmdConfig.name}`, error as Error, 'Commands');
+            }
+        }
+    } catch (error) {
+        logger.error('Failed to load commands.json', error as Error, 'Commands');
     }
+    
     return commandMap;
 }
 

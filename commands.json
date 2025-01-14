@@ -1,0 +1,49 @@
+{
+  "commands": [
+    {
+      "name": "time",
+      "description": "Get the current time",
+      "source": "./commands/time"
+    },
+    {
+      "name": "price",
+      "description": "Get the price of a token (!price <token_address>)",
+      "source": "./commands/token/price"
+    },
+    {
+      "name": "first-buyers",
+      "description": "Get the first buyers of a token (!first-buyers <token_address>)",
+      "source": "./commands/token/first-buyers"
+    },
+    {
+      "name": "check",
+      "description": "Check risk profile of a token (!check <token_address>)",
+      "source": "./commands/token/check"
+    },
+    {
+      "name": "pnl",
+      "description": "Get PNL for a wallet (!pnl <wallet_address>)",
+      "source": "./commands/token/pnl"
+    },
+    {
+      "name": "ta",
+      "description": "Technical analysis of a token (!ta <token_address>)",
+      "source": "./commands/token/ta"
+    },
+    {
+      "name": "trending",
+      "description": "View trending tokens (!trending [timeframe])",
+      "source": "./commands/token/trending"
+    },
+    {
+      "name": "scalp",
+      "description": "Get scalping signals for a token (!scalp <token_address>)",
+      "source": "./commands/token/scalp"
+    },
+    {
+      "name": "list",
+      "description": "Show all available commands",
+      "source": "./commands/list"
+    }
+  ]
+} 
