@@ -65,4 +65,12 @@ To use the command, you can use the `!my-command` command in your Discord server
 To create a discord bot you can follow the instructions [here](https://www.ionos.com/digitalguide/server/know-how/creating-discord-bot/).
 
 
+# Available commands
+
+- `!pnl <wallet>`: Get the PNL for a wallet
+- `!check <token>`: Check risk profile of a token
+- `!first-buyers <token>`: Get the first buyers of a token
+- `!time`: Get the time
+- `!price <token>`: Get the price of a token
+
 Author: [MetaAnomaly](https://github.com/metaanomaly)
