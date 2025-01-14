@@ -4,3 +4,4 @@ export * from './token/first-buyers';
 export * from './token/check';
 export * from './token/pnl';
 export * from './token/ta';
+export * from './token/trending';

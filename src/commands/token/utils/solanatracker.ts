@@ -305,3 +305,33 @@ export async function getTokenChart(
         throw error;
     }
 }
+
+export type TimeFrame = '5m' | '15m' | '30m' | '1h' | '2h' | '3h' | '4h' | '5h' | '6h' | '12h' | '24h';
+
+export const VALID_TIMEFRAMES: TimeFrame[] = ['5m', '15m', '30m', '1h', '2h', '3h', '4h', '5h', '6h', '12h', '24h'];
+
+interface TrendingTokenResponse {
+    token: TokenInfo;
+    pools: PoolInfo[];
+    events: TokenEvents;
+    risk: RiskInfo;
+}
+
+export async function getTrendingTokens(timeframe: TimeFrame = '6h'): Promise<TrendingTokenResponse[]> {
+    try {
+        const authHeader = { 'x-api-key': API_KEY } as HeadersInit;
+        const response = await fetch(`${BASE_URL}/tokens/trending/${timeframe}`, {
+            headers: authHeader
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data as TrendingTokenResponse[];
+    } catch (error) {
+        console.error('Error fetching trending tokens:', error);
+        throw error;
+    }
+}
