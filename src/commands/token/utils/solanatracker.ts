@@ -98,6 +98,37 @@ interface TokenDetailsResponse {
     txns: number;
 }
 
+export interface TokenPnlInfo {
+    holding: number;
+    held: number;
+    sold: number;
+    realized: number;
+    unrealized: number;
+    total: number;
+    total_sold: number;
+    total_invested: number;
+    average_buy_amount: number;
+    current_value: number;
+    cost_basis: number;
+}
+
+interface PnlSummary {
+    realized: number;
+    unrealized: number;
+    total: number;
+    totalInvested: number;
+    averageBuyAmount: number;
+    totalWins: number;
+    totalLosses: number;
+    winPercentage: number;
+    lossPercentage: number;
+}
+
+interface PnlResponse {
+    tokens: Record<string, TokenPnlInfo>;
+    summary: PnlSummary;
+}
+
 const BASE_URL = 'https://data.solanatracker.io';
 const API_KEY = process.env.SOLANATRACKER_API_KEY;
 
@@ -207,4 +238,23 @@ export function formatTokenDetails(data: TokenDetailsResponse): string {
         `• Rugged: ${risk.rugged ? '⛔️ Yes' : '✅ No'}`,
         riskDetails ? `\nRisk Factors:\n${riskDetails}` : ''
     ].filter(Boolean).join('\n');
+}
+
+export async function getWalletPnl(wallet: string): Promise<PnlResponse> {
+    try {
+        const authHeader = { 'x-api-key': API_KEY } as HeadersInit;
+        const response = await fetch(`${BASE_URL}/pnl/${wallet}`, {
+            headers: authHeader
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data as PnlResponse;
+    } catch (error) {
+        console.error('Error fetching wallet PNL:', error);
+        throw error;
+    }
 }
