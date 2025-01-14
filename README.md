@@ -1,10 +1,9 @@
 # Trade Buddy
 <div align="center">
-    <img src="./media/buddy.jpg" alt="TradeBuddy" style="max-width: 50%; height: auto;">
+    <img src="./media/buddy.jpg" alt="TradeBuddy" width="300">
     <br><br>
     <strong><em>Build your own TradeBuddy 👦🏻📱</em></strong>
     <br>
-    <em><strong>⚠️ TradeBuddy is a work in progress</strong></em>
 </div>
 
 
