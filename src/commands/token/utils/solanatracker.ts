@@ -129,6 +129,26 @@ interface PnlResponse {
     summary: PnlSummary;
 }
 
+export interface OHLCVData {
+    open: number;
+    close: number;
+    low: number;
+    high: number;
+    volume: number;
+    time: number;
+}
+
+interface ChartResponse {
+    oclhv: OHLCVData[];
+}
+
+interface ChartParams {
+    type?: string;
+    time_from?: number;
+    time_to?: number;
+    marketCap?: boolean;
+}
+
 const BASE_URL = 'https://data.solanatracker.io';
 const API_KEY = process.env.SOLANATRACKER_API_KEY;
 
@@ -255,6 +275,33 @@ export async function getWalletPnl(wallet: string): Promise<PnlResponse> {
         return data as PnlResponse;
     } catch (error) {
         console.error('Error fetching wallet PNL:', error);
+        throw error;
+    }
+}
+
+export async function getTokenChart(
+    address: string, 
+    params: ChartParams = {}
+): Promise<ChartResponse> {
+    try {
+        const queryParams = new URLSearchParams();
+        if (params.type) queryParams.append('type', params.type);
+        if (params.time_from) queryParams.append('time_from', params.time_from.toString());
+        if (params.time_to) queryParams.append('time_to', params.time_to.toString());
+        if (params.marketCap) queryParams.append('marketCap', 'true');
+
+        const url = `${BASE_URL}/chart/${address}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+        const authHeader = { 'x-api-key': API_KEY } as HeadersInit;
+        const response = await fetch(url, { headers: authHeader });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data as ChartResponse;
+    } catch (error) {
+        console.error('Error fetching chart data:', error);
         throw error;
     }
 }
