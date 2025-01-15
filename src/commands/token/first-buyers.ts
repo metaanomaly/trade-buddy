@@ -34,7 +34,7 @@ function formatBuyersEmbed(buyers: Array<{ wallet: string; total: number }>, add
     return embed;
 }
 
-export const firstBuyers: Command = {
+export const firstbuyers: Command = {
     name: 'firstbuyers',
     handler: async (message: Message) => {
         const args = message.content.split(' ');
@@ -55,4 +55,4 @@ export const firstBuyers: Command = {
             return errorEmbed;
         }
     }
-}
+};

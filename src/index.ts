@@ -1,11 +1,16 @@
 import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import { config } from 'dotenv';
 import { Command } from './discord/Command';
-import { logger } from './utils/Logger';
+import { logger, LogLevel } from './utils/Logger';
 import * as fs from 'fs';
 import * as path from 'path';
 
 config();
+
+
+if (process.env.DEBUG === 'true') {
+    logger.setLogLevel(LogLevel.DEBUG);
+}
 
 interface CommandConfig {
     name: string;

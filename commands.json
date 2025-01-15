@@ -11,8 +11,8 @@
       "source": "./commands/token/price"
     },
     {
-      "name": "first-buyers",
-      "description": "Get the first buyers of a token (!first-buyers <token_address>)",
+      "name": "firstbuyers",
+      "description": "Get the first buyers of a token (!firstbuyers <token_address>)",
       "source": "./commands/token/first-buyers"
     },
     {
