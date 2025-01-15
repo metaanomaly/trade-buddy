@@ -6,3 +6,4 @@ export * from './token/pnl';
 export * from './token/ta';
 export * from './token/trending';
 export * from './token/scalp';
+export * from './token/topholders';

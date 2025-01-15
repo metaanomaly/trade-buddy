@@ -44,6 +44,11 @@
       "name": "list",
       "description": "Show all available commands",
       "source": "./commands/list"
+    },
+    {
+      "name": "topholders",
+      "description": "Get the top holders of a token (!topholders <token_address>)",
+      "source": "./commands/token/topholders"
     }
   ]
 } 

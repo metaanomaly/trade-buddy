@@ -149,6 +149,16 @@ interface ChartParams {
     marketCap?: boolean;
 }
 
+interface TokenHolder {
+    address: string;
+    amount: number;
+    percentage: number;
+    value: {
+        quote: number;
+        usd: number;
+    };
+}
+
 const BASE_URL = 'https://data.solanatracker.io';
 const API_KEY = process.env.SOLANATRACKER_API_KEY;
 
@@ -332,6 +342,25 @@ export async function getTrendingTokens(timeframe: TimeFrame = '6h'): Promise<Tr
         return data as TrendingTokenResponse[];
     } catch (error) {
         console.error('Error fetching trending tokens:', error);
+        throw error;
+    }
+}
+
+export async function getTopHolders(address: string): Promise<TokenHolder[]> {
+    try {
+        const authHeader = { 'x-api-key': API_KEY } as HeadersInit;
+        const response = await fetch(`${BASE_URL}/tokens/${address}/holders/top`, {
+            headers: authHeader
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data as TokenHolder[];
+    } catch (error) {
+        console.error('Error fetching top holders:', error);
         throw error;
     }
 }
