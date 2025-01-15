@@ -1,9 +1,4 @@
-import { 
-    calculateEMA, 
-    calculateRSI, 
-    calculateBollingerBands, 
-    calculateMACD 
-} from './technical-analysis';
+import { calculateRSI, calculateBollingerBands, calculateMACD, calculateEMA } from './technical-analysis';
 
 interface ScalpSignal {
     type: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL';
@@ -37,10 +32,18 @@ interface ScalpAnalysis {
             middle: number;
             lower: number;
         };
+        momentum: {
+            priceChange: number;
+            volumeSpike: number;
+        };
     };
 }
 
-function analyzeScalpSignal(prices: number[], volumes: number[]): ScalpAnalysis {
+function analyzeScalpSignal(
+    prices: number[], 
+    volumes: number[],
+    timeframes: number[] // Unix timestamps for each candle
+): ScalpAnalysis {
     const rsi = calculateRSI(prices, 14);
     const bb = calculateBollingerBands(prices, 20, 2);
     const macd = calculateMACD(prices);
@@ -55,73 +58,122 @@ function analyzeScalpSignal(prices: number[], volumes: number[]): ScalpAnalysis 
     let signalType: ScalpSignal['type'] = 'NEUTRAL';
     let confidence = 0;
     
-    // Trend Analysis
+    // Calculate price momentum
+    const priceChange = ((currentPrice - prices[prices.length - 2]) / prices[prices.length - 2]) * 100;
+    const volumeSpike = lastVolume / avgVolume;
+    
+    // Time-based analysis
+    const currentTime = timeframes[timeframes.length - 1];
+    const hourOfDay = new Date(currentTime * 1000).getUTCHours();
+    
+    // Adjust for high-activity trading hours (e.g., US market hours)
+    const isActiveHours = hourOfDay >= 13 && hourOfDay <= 21; // 13-21 UTC (9am-5pm EST)
+    if (isActiveHours) {
+        confidence += 10;
+        reasons.push("⏰ Trading during active market hours");
+    }
+    
+    // Enhanced Trend Analysis with price action
     if (ema9[ema9.length - 1] > ema21[ema21.length - 1]) {
-        reasons.push("🔼 Short-term trend is bullish (EMA9 > EMA21)");
-        confidence += 20;
+        if (priceChange > 3) { // Strong momentum
+            reasons.push("🚀 Strong bullish momentum with EMA confirmation");
+            confidence += 30;
+        } else {
+            reasons.push("🔼 Bullish trend (EMA9 > EMA21)");
+            confidence += 20;
+        }
     } else {
-        reasons.push("🔽 Short-term trend is bearish (EMA9 < EMA21)");
-        confidence -= 20;
+        if (priceChange < -3) {
+            reasons.push("💥 Strong bearish momentum with EMA confirmation");
+            confidence -= 30;
+        } else {
+            reasons.push("🔽 Bearish trend (EMA9 < EMA21)");
+            confidence -= 20;
+        }
     }
     
-    // RSI Analysis
-    if (rsi < 30) {
-        reasons.push("💚 RSI indicates oversold conditions");
+    // Enhanced Volume Analysis
+    if (volumeSpike > 2.5) {
+        reasons.push("🌊 Extreme volume spike detected");
         confidence += 25;
-    } else if (rsi > 70) {
-        reasons.push("❌ RSI indicates overbought conditions");
-        confidence -= 25;
-    }
-    
-    // MACD Analysis
-    if (macd.histogram > 0 && macd.histogram > macd.signal) {
-        reasons.push("📈 MACD shows increasing momentum");
+    } else if (volumeSpike > 1.5) {
+        reasons.push("📊 Volume above average");
         confidence += 15;
-    } else if (macd.histogram < 0 && macd.histogram < macd.signal) {
-        reasons.push("📉 MACD shows decreasing momentum");
+    } else if (volumeSpike < 0.5) {
+        reasons.push("⚠️ Volume below average - low liquidity");
         confidence -= 15;
     }
     
-    // Volume Analysis
-    if (lastVolume > avgVolume * 1.5) {
-        reasons.push("📊 Volume is significantly above average");
-        confidence += 15;
+    // RSI with volume confirmation
+    if (rsi < 30 && volumeSpike > 1.2) {
+        reasons.push("💚 Strong oversold conditions with volume support");
+        confidence += 35;
+    } else if (rsi > 70 && volumeSpike > 1.2) {
+        reasons.push("❌ Strong overbought conditions with volume confirmation");
+        confidence -= 35;
     }
     
-    // Bollinger Bands Analysis
-    if (currentPrice < bb.lower) {
-        reasons.push("🎯 Price below lower Bollinger Band - potential bounce");
-        confidence += 25;
-    } else if (currentPrice > bb.upper) {
-        reasons.push("⚠️ Price above upper Bollinger Band - potential reversal");
-        confidence -= 25;
+    // MACD Analysis with momentum
+    if (macd.histogram > 0 && macd.histogram > macd.signal) {
+        if (priceChange > 2) {
+            reasons.push("📈 Strong MACD momentum with price confirmation");
+            confidence += 25;
+        } else {
+            reasons.push("📈 MACD shows increasing momentum");
+            confidence += 15;
+        }
+    } else if (macd.histogram < 0 && macd.histogram < macd.signal) {
+        if (priceChange < -2) {
+            reasons.push("📉 Strong bearish MACD with price confirmation");
+            confidence -= 25;
+        } else {
+            reasons.push("📉 MACD shows decreasing momentum");
+            confidence -= 15;
+        }
     }
     
-    // Determine Signal Type based on confidence
-    if (confidence >= 60) signalType = 'STRONG_BUY';
-    else if (confidence >= 30) signalType = 'BUY';
-    else if (confidence <= -60) signalType = 'STRONG_SELL';
-    else if (confidence <= -30) signalType = 'SELL';
+    // Dynamic Bollinger Bands Analysis
+    const bbWidth = (bb.upper - bb.lower) / bb.middle; // Volatility measure
+    if (currentPrice < bb.lower && volumeSpike > 1.2) {
+        reasons.push("🎯 Strong oversold with volume confirmation");
+        confidence += 30;
+    } else if (currentPrice > bb.upper && volumeSpike > 1.2) {
+        reasons.push("⚠️ Strong overbought with volume confirmation");
+        confidence -= 30;
+    }
     
-    // Calculate potential entry/exit levels
+    // Volatility-based confidence adjustment
+    if (bbWidth > 0.1) { // High volatility
+        confidence *= 0.8; // Reduce confidence in volatile conditions
+        reasons.push("🌋 High volatility - reducing confidence");
+    }
+    
+    // Determine Signal Type based on adjusted confidence
+    if (confidence >= 70) signalType = 'STRONG_BUY';
+    else if (confidence >= 40) signalType = 'BUY';
+    else if (confidence <= -70) signalType = 'STRONG_SELL';
+    else if (confidence <= -40) signalType = 'SELL';
+    
+    // Dynamic take profit and stop loss based on volatility
+    const volatilityFactor = Math.max(1, bbWidth * 10);
     const levels: PriceLevel[] = [
         {
-            price: bb.lower,
+            price: currentPrice * (1 - 0.02 * volatilityFactor),
             type: 'ENTRY',
             confidence: 80,
-            percentage: 0
+            percentage: -2 * volatilityFactor
         },
         {
-            price: bb.upper,
+            price: currentPrice * (1 + 0.05 * volatilityFactor),
             type: 'TP',
             confidence: 70,
-            percentage: ((bb.upper - currentPrice) / currentPrice) * 100
+            percentage: 5 * volatilityFactor
         },
         {
-            price: bb.lower * 0.95,
+            price: currentPrice * (1 - 0.03 * volatilityFactor),
             type: 'SL',
             confidence: 60,
-            percentage: ((bb.lower * 0.95 - currentPrice) / currentPrice) * 100
+            percentage: -3 * volatilityFactor
         }
     ];
 
@@ -143,9 +195,13 @@ function analyzeScalpSignal(prices: number[], volumes: number[]): ScalpAnalysis 
                 fast: ema9[ema9.length - 1],
                 slow: ema21[ema21.length - 1]
             },
-            bb
+            bb,
+            momentum: {
+                priceChange,
+                volumeSpike
+            }
         }
     };
 }
 
-export { analyzeScalpSignal, type ScalpAnalysis }; 
+export { analyzeScalpSignal, type ScalpAnalysis };

@@ -47,7 +47,9 @@ function formatScalpEmbed(analysis: ScalpAnalysis, currentPrice: number): EmbedB
             `RSI: ${analysis.metrics.rsi.toFixed(2)}`,
             `MACD: ${analysis.metrics.macd.histogram > 0 ? '📈' : '📉'} ${analysis.metrics.macd.histogram.toFixed(6)}`,
             `EMAs: Fast=${analysis.metrics.ema.fast.toFixed(6)} / Slow=${analysis.metrics.ema.slow.toFixed(6)}`,
-            `BB Middle: $${analysis.metrics.bb.middle.toFixed(6)}`
+            `BB Middle: $${analysis.metrics.bb.middle.toFixed(6)}`,
+            `Momentum: ${analysis.metrics.momentum.priceChange > 0 ? '📈' : '📉'} ${analysis.metrics.momentum.priceChange.toFixed(2)}%`,
+            `Volume Spike: ${analysis.metrics.momentum.volumeSpike.toFixed(2)}x`
         ].join('\n')
     });
 
@@ -71,7 +73,8 @@ export const scalp: Command = {
             
             const prices = chartData.oclhv.map(d => d.close);
             const volumes = chartData.oclhv.map(d => d.volume);
-            const analysis = analyzeScalpSignal(prices, volumes);
+            const timeframes = chartData.oclhv.map(d => d.time);
+            const analysis = analyzeScalpSignal(prices, volumes, timeframes);
             
             return formatScalpEmbed(analysis, prices[prices.length - 1]);
         } catch (error) {
