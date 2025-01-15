@@ -85,9 +85,16 @@ async function loadCommands(): Promise<Map<string, Command>> {
                                 embeds: [response], 
                                 reply: { messageReference: message.id } 
                             });
-                        } else {
+                        } else if (typeof response === 'string') {
                             await message.channel.send({ 
                                 content: response, 
+                                reply: { messageReference: message.id } 
+                            });
+                        } else {
+                            await message.channel.send({
+                                content: response.content,
+                                embeds: response.embeds,
+                                files: response.files,
                                 reply: { messageReference: message.id } 
                             });
                         }

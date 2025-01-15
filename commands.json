@@ -49,6 +49,16 @@
       "name": "topholders",
       "description": "Get the top holders of a token (!topholders <token_address>)",
       "source": "./commands/token/topholders"
+    },
+    {
+      "name": "backtestscalp",
+      "description": "Backtest a scalping strategy (!backtestscalp <token_address>)",
+      "source": "./commands/token/backtest-scalp"
+    },
+    {
+      "name": "bubblemap",
+      "description": "Get a bubble map of trending tokens (!bubblemap [timeframe])",
+      "source": "./commands/token/bubblemap"
     }
   ]
 } 

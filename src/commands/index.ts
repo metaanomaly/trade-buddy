@@ -7,3 +7,5 @@ export * from './token/ta';
 export * from './token/trending';
 export * from './token/scalp';
 export * from './token/topholders';
+export * from './token/backtest-scalp';
+export * from './token/bubblemap';

@@ -320,7 +320,7 @@ export type TimeFrame = '5m' | '15m' | '30m' | '1h' | '2h' | '3h' | '4h' | '5h' 
 
 export const VALID_TIMEFRAMES: TimeFrame[] = ['5m', '15m', '30m', '1h', '2h', '3h', '4h', '5h', '6h', '12h', '24h'];
 
-interface TrendingTokenResponse {
+export interface TrendingTokenResponse {
     token: TokenInfo;
     pools: PoolInfo[];
     events: TokenEvents;
